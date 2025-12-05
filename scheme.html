@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmSync - Scheme Finder</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'farm-green': '#38761D', 
+                        'leaf-green': '#A9D18E', 
+                        'soil-brown': '#654321', 
+                        'surface': '#f9fafb', 
+                        'scheme-blue': '#1E90FF', 
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+      
+        .container-shadow {
+            box-shadow: 0 10px 30px rgba(56, 118, 29, 0.15);
+        }
+        .scheme-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border-left-width: 6px;
+        }
+        .scheme-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(30, 144, 255, 0.15);
+        }
+        .loading-spinner {
+            border-top-color: #38761D;
+            -webkit-animation: spin 1s ease-in-out infinite;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-surface min-h-screen p-4 md:p-8 font-sans">
+
+    
+    <div class="max-w-6xl mx-auto">
+        
+        
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold text-farm-green mb-2">
+                FarmSync <span class="text-scheme-blue">Scheme Finder</span>
+            </h1>
+            <p class="text-xl text-gray-600">Personalized recommendations for relevant government subsidies and loans.</p>
+        </header>
+
+        
+        <div id="status-message" class="hidden text-center p-3 rounded-xl text-sm mb-6 bg-blue-100 text-blue-800"></div>
+
+        
+        <div class="bg-white p-6 md:p-8 rounded-xl container-shadow mb-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6 border-b pb-2 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-scheme-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                Personalize Your Search
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <select id="state-filter" class="p-3 border-2 border-gray-300 rounded-lg focus:border-farm-green focus:ring focus:ring-leaf-green/50">
+                    <option value="All">All States (Filter by State)</option>
+                    <option value="Maharashtra">Maharashtra</option>
+                    <option value="Punjab">Punjab</option>
+                    <option value="Bihar">Bihar</option>
+                    <option value="National">National (Central)</option>
+                </select>
+
+                <select id="crop-filter" class="p-3 border-2 border-gray-300 rounded-lg focus:border-farm-green focus:ring focus:ring-leaf-green/50">
+                    <option value="All">All Crops (Filter by Crop)</option>
+                    <option value="Rice">Rice</option>
+                    <option value="Sugarcane">Sugarcane</option>
+                    <option value="Horticulture">Horticulture</option>
+                    <option value="All">All Crops</option>
+                </select>
+
+                <select id="type-filter" class="p-3 border-2 border-gray-300 rounded-lg focus:border-farm-green focus:ring focus:ring-leaf-green/50">
+                    <option value="All">All Types (Filter by Type)</option>
+                    <option value="Subsidy">Subsidy</option>
+                    <option value="Loan">Loan</option>
+                    <option value="Insurance">Insurance</option>
+                </select>
+            </div>
+            <p class="text-sm text-gray-500 mt-4">Results update automatically when filters change.</p>
+        </div>
+
+       
+        <div class="bg-white p-6 md:p-8 rounded-xl container-shadow">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6 border-b pb-2 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-farm-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5a1 1 0 011 1v2a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 011-1zm6 4H7m6 4H7m6 4H7"></path></svg>
+                Recommended Schemes
+            </h2>
+            
+            <div id="schemes-container" class="space-y-4">
+                
+                <p id="loading-schemes" class="text-center text-gray-500 italic">
+                    <span class="loading-spinner ease-linear rounded-full border-4 border-t-4 border-gray-200 h-6 w-6 inline-block mr-3"></span>
+                    Fetching latest government schemes...
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+        <script type="module">
+        
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            doc, 
+            setDoc, 
+            onSnapshot, 
+            collection, 
+            getDocs 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+       
+        const schemesContainer = document.getElementById('schemes-container');
+        const loadingSchemes = document.getElementById('loading-schemes');
+        const statusMessage = document.getElementById('status-message');
+        const stateFilter = document.getElementById('state-filter');
+        const cropFilter = document.getElementById('crop-filter');
+        const typeFilter = document.getElementById('type-filter');
+
+      
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let db, auth;
+        let isAuthReady = false;
+        let userId = null;
+        let allSchemes = []; 
+
+        const SCHEMES_COLLECTION_PATH = `/artifacts/${appId}/public/data/government_schemes`;
+        
+       
+        function renderSchemeCard(scheme) {
+            const typeColor = scheme.type === 'Subsidy' ? 'border-scheme-blue' : 
+                              scheme.type === 'Loan' ? 'border-farm-green' : 
+                              'border-soil-brown';
+
+            const buttonColor = scheme.type === 'Subsidy' ? 'bg-scheme-blue hover:bg-scheme-blue/90' : 'bg-farm-green hover:bg-farm-green/90';
+
+            return `
+                <div class="scheme-card bg-white p-5 rounded-xl border ${typeColor} shadow-md">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800">${scheme.name}</h3>
+                            <p class="text-sm font-semibold text-gray-500">${scheme.type} | Applicable in ${scheme.state_scope}</p>
+                        </div>
+                        <span class="text-xs font-semibold px-3 py-1 rounded-full text-white ${typeColor.replace('border', 'bg')}">
+                            ${scheme.type.toUpperCase()}
+                        </span>
+                    </div>
+                    <p class="text-gray-700 mb-4 text-sm">${scheme.description_short}</p>
+                    <div class="flex justify-between items-center text-xs text-gray-600">
+                        <p>
+                            <span class="font-medium">Eligible Crops:</span> ${scheme.eligible_crops.join(', ')}
+                        </p>
+                        <a href="${scheme.link}" target="_blank" class="px-4 py-2 text-xs rounded-lg text-white font-medium ${buttonColor} transition duration-300">
+                            Apply / Details
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+
+       
+        function filterAndDisplaySchemes() {
+            loadingSchemes.classList.add('hidden');
+            const selectedState = stateFilter.value;
+            const selectedCrop = cropFilter.value;
+            const selectedType = typeFilter.value;
+
+            const filteredSchemes = allSchemes.filter(scheme => {
+                const matchesState = selectedState === 'All' || scheme.state_scope.includes(selectedState) || scheme.state_scope.includes('National');
+                const matchesCrop = selectedCrop === 'All' || scheme.eligible_crops.includes(selectedCrop) || scheme.eligible_crops.includes('All');
+                const matchesType = selectedType === 'All' || scheme.type === selectedType;
+                
+                return matchesState && matchesCrop && matchesType;
+            });
+
+            schemesContainer.innerHTML = '';
+            if (filteredSchemes.length === 0) {
+                schemesContainer.innerHTML = '<p class="text-center text-gray-500 italic p-6">No schemes match your selected criteria. Try adjusting the filters.</p>';
+                return;
+            }
+
+            filteredSchemes.forEach(scheme => {
+                schemesContainer.innerHTML += renderSchemeCard(scheme);
+            });
+            
+            showStatus(`Showing ${filteredSchemes.length} schemes matching your search.`, 'bg-blue-100 text-scheme-blue');
+        }
+
+       
+        function showStatus(message, className) {
+            statusMessage.innerHTML = message;
+            statusMessage.className = `text-center p-3 rounded-xl text-sm mb-6 ${className}`;
+            statusMessage.classList.remove('hidden');
+        }
+
+        
+        async function initializeAndAuthenticate() {
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                onAuthStateChanged(auth, (user) => {
+                    userId = user?.uid || crypto.randomUUID();
+                    isAuthReady = true;
+                    console.log("Firebase Auth Ready. User ID:", userId);
+                   
+                    setupSchemesListener();
+                });
+            } catch (error) {
+                console.error("Firebase initialization or authentication failed:", error);
+                showStatus('Error: Failed to connect to scheme database.', 'bg-red-100 text-red-700');
+            }
+        }
+
+       
+        async function initializeSchemesData() {
+            const collectionRef = collection(db, SCHEMES_COLLECTION_PATH);
+            const snapshot = await getDocs(collectionRef);
+
+            if (snapshot.empty) {
+                console.log("No scheme data found. Initializing mock data...");
+                const mockData = [
+                    { 
+                        id: 'pmfby', 
+                        name: "Pradhan Mantri Fasal Bima Yojana (PMFBY)", 
+                        type: "Insurance", 
+                        description_short: "Provides comprehensive crop insurance against non-preventable natural risks.",
+                        state_scope: "National",
+                        eligible_crops: ["All"],
+                        link: "https://pmfby.gov.in/",
+                    },
+                    { 
+                        id: 'kisancard', 
+                        name: "Kisan Credit Card (KCC) Loan", 
+                        type: "Loan", 
+                        description_short: "Low-interest credit facility for farming needs, covering cultivation expenses and post-harvest needs.",
+                        state_scope: "National",
+                        eligible_crops: ["All"],
+                        link: "https://www.nabard.org/content.aspx?id=581",
+                    },
+                    { 
+                        id: 'mahaagri', 
+                        name: "Maharashtra Farm Infrastructure Subsidy", 
+                        type: "Subsidy", 
+                        description_short: "Subsidy for purchasing modern agricultural machinery and building storage facilities.",
+                        state_scope: "Maharashtra",
+                        eligible_crops: ["Horticulture", "Sugarcane"],
+                        link: "#",
+                    },
+                    { 
+                        id: 'pbwater', 
+                        name: "Punjab Water Conservation Loan", 
+                        type: "Loan", 
+                        description_short: "Subsidized loan for installing drip irrigation, sprinklers, and micro-irrigation systems.",
+                        state_scope: "Punjab",
+                        eligible_crops: ["Rice", "Horticulture"],
+                        link: "#",
+                    },
+                ];
+
+                for (const item of mockData) {
+                    const docRef = doc(db, SCHEMES_COLLECTION_PATH, item.id);
+                    await setDoc(docRef, item);
+                }
+                showStatus('Government scheme data initialized and ready.', 'bg-leaf-green/50 text-farm-green');
+            }
+        }
+
+       
+        function setupSchemesListener() {
+            if (!isAuthReady || !db) return;
+
+            
+            initializeSchemesData().then(() => {
+                const collectionRef = collection(db, SCHEMES_COLLECTION_PATH);
+
+                onSnapshot(collectionRef, (snapshot) => {
+                    loadingSchemes.classList.add('hidden');
+                    allSchemes = snapshot.docs.map(doc => doc.data());
+                    
+                    filterAndDisplaySchemes(); 
+                }, (error) => {
+                    console.error("Error listening to scheme data:", error);
+                    showStatus('Error: Failed to fetch schemes in real-time.', 'bg-red-100 text-red-700');
+                });
+            });
+        }
+        
+        stateFilter.addEventListener('change', filterAndDisplaySchemes);
+        cropFilter.addEventListener('change', filterAndDisplaySchemes);
+        typeFilter.addEventListener('change', filterAndDisplaySchemes);
+        
+       
+        initializeAndAuthenticate();
+
+    </script>
+</body>
+</html>

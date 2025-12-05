@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmSync - PM Kisan Eligibility Check</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'farm-green': '#38761D', 
+                        'leaf-green': '#A9D18E', 
+                        'soil-brown': '#654321', 
+                        'surface': '#f9fafb', 
+                        'accent-orange': '#FF9900', 
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+         
+        .step-content {
+            min-height: 200px; 
+        }
+        .radio-label {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .radio-label:hover {
+            border-color: var(--tw-colors-leaf-green);
+            background-color: rgba(169, 209, 142, 0.1); 
+        }
+        input[type="radio"]:checked + .radio-label {
+            border-color: var(--tw-colors-farm-green);
+            background-color: rgba(169, 209, 142, 0.2); 
+            box-shadow: 0 0 0 3px rgba(169, 209, 142, 0.5); 
+        }
+        .progress-bar {
+            height: 8px;
+            background-color: var(--tw-colors-leaf-green);
+            border-radius: 4px;
+            transition: width 0.4s ease-in-out;
+        }
+        
+        .text-hi {
+            display: none;
+        }
+        [data-lang="hi"] .text-en {
+            display: none;
+        }
+        [data-lang="hi"] .text-hi {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-surface min-h-screen p-4 flex items-center justify-center font-sans" data-lang="en">
+
+   
+    <div class="w-full max-w-xl bg-white p-8 md:p-10 rounded-xl shadow-2xl border-t-8 border-accent-orange">
+        
+        
+        <div class="flex justify-end mb-4">
+            <button id="lang-toggle" class="px-3 py-1 text-sm rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition">
+                Switch to Hindi
+            </button>
+        </div>
+
+        <header class="text-center mb-8">
+            <h1 id="header-title" class="text-3xl font-extrabold text-farm-green mb-2" data-en="PM Kisan Scheme Eligibility Check" data-hi="पीएम किसान योजना पात्रता जाँच">
+                PM Kisan Scheme Eligibility Check
+            </h1>
+            <p id="header-subtitle" class="text-md text-gray-600" data-en="Answer a few questions to see if you qualify for the scheme." data-hi="आप इस योजना के लिए योग्य हैं या नहीं, यह जानने के लिए कुछ सवालों के जवाब दें।">
+                Answer a few questions to see if you qualify for the scheme.
+            </p>
+        </header>
+
+        
+        <div class="mb-6">
+            <div class="w-full bg-gray-200 rounded-full h-2">
+                <div id="progress-bar" class="progress-bar" style="width: 0%"></div>
+            </div>
+            <p id="step-info" class="text-center text-sm mt-2 text-gray-500">Question 0 of 5</p>
+        </div>
+
+        <div id="eligibility-checker">
+
+            <div id="step-1" class="step-content">
+                <p class="text-xl font-semibold text-gray-800 mb-6">
+                    <span class="text-en" data-i18n-key="q1-question">1. Do you possess cultivable agricultural land registered in your family's or individual name?</span>
+                    <span class="text-hi" data-i18n-key="q1-question">1. क्या आपके पास या आपके परिवार के पास खेती योग्य कृषि भूमि है जो आपके या आपके परिवार के नाम पर पंजीकृत है?</span>
+                </p>
+                <div class="space-y-4">
+                    <input type="radio" id="q1-yes" name="q1-land-status" value="eligible" class="hidden">
+                    <label for="q1-yes" class="radio-label">
+                        <span class="font-bold mr-3" data-i18n-key="YES:">YES:</span>
+                        <span class="text-en" data-i18n-key="q1-yes">I/my family possess cultivable land.</span>
+                        <span class="text-hi" data-i18n-key="q1-yes">मेरे/मेरे परिवार के पास खेती योग्य भूमि है।</span>
+                    </label>
+                    
+                    <input type="radio" id="q1-no" name="q1-land-status" value="ineligible" class="hidden">
+                    <label for="q1-no" class="radio-label">
+                        <span class="font-bold mr-3" data-i18n-key="NO:">NO:</span>
+                        <span class="text-en" data-i18n-key="q1-no">I do not possess any cultivable land.</span>
+                        <span class="text-hi" data-i18n-key="q1-no">मेरे पास खेती योग्य भूमि नहीं है।</span>
+                    </label>
+                </div>
+            </div>
+
+            
+            <div id="step-2" class="step-content hidden">
+                <p class="text-xl font-semibold text-gray-800 mb-6">
+                    <span class="text-en" data-i18n-key="q2-question">2. Is your land registered under any institutional name (e.g., trust, company, society)?</span>
+                    <span class="text-hi" data-i18n-key="q2-question">2. क्या आपकी भूमि किसी संस्थागत नाम (जैसे, ट्रस्ट, कंपनी, सोसाइटी) के तहत पंजीकृत है?</span>
+                </p>
+                <div class="space-y-4">
+                    <input type="radio" id="q2-no" name="q2-institutional" value="eligible" class="hidden">
+                    <label for="q2-no" class="radio-label">
+                        <span class="font-bold mr-3" data-i18n-key="NO:">NO:</span>
+                        <span class="text-en" data-i18n-key="q2-no">The land is registered under my/family's name.</span>
+                        <span class="text-hi" data-i18n-key="q2-no">भूमि मेरे/परिवार के नाम पर पंजीकृत है।</span>
+                    </label>
+                    <input type="radio" id="q2-yes" name="q2-institutional" value="ineligible" class="hidden">
+                    <label for="q2-yes" class="radio-label">
+                        <span class="font-bold mr-3" data-i18n-key="YES:">YES:</span>
+                        <span class="text-en" data-i18n-key="q2-yes">The land is held by an institution.</span>
+                        <span class="text-hi" data-i18n-key="q2-yes">भूमि किसी संस्था द्वारा धारित है।</span>
+                    </label>
+                </div>
+            </div>
+
+            
+            <div id="step-3" class="step-content hidden">
+                <p class="text-xl font-semibold text-gray-800 mb-6">
+                    <span class="text-en" data-i18n-key="q3-question">3. Were you or any family member an Income Tax Payer in the last assessment year?</span>
+                    <span class="text-hi" data-i18n-key="q3-question">3. क्या आप या आपके परिवार का कोई सदस्य पिछले मूल्यांकन वर्ष में आयकर दाता (Income Tax Payer) थे?</span>
+                </p>
+                <div class="space-y-4">
+                    <input type="radio" id="q3-no" name="q3-tax" value="eligible" class="hidden">
+                    <label for="q3-no" class="radio-label">
+                        <span class="font-bold mr-3" data-i18n-key="NO:">NO:</span>
+                        <span class="text-en" data-i18n-key="q3-no">I/my family did not pay income tax.</span>
+                        <span class="text-hi" data-i18n-key="q3-no">मैंने/मेरे परिवार ने आयकर नहीं दिया।</span>
+                    </label>
+                    <input type="radio" id="q3-yes" name="q3-tax" value="ineligible" class="hidden">
+                    <label for="q3-yes" class="radio-label">
+                        <span class="font-bold mr-3" data-i18n-key="YES:">YES:</span>
+                        <span class="text-en" data-i18n-key="q3-yes">I/my family paid income tax.</span>
+                        <span class="text-hi" data-i18n-key="q3-yes">मैंने/मेरे परिवार ने आयकर दिया।</span>
+                    </label>
+                </div>
+            </div>
+
+            
+            <div id="step-4" class="step-content hidden">
+                <p class="text-xl font-semibold text-gray-800 mb-6">
+                    <span class="text-en" data-i18n-key="q4-question">4. Are you or any family member currently holding or retired from a Government post or Constitutional position?</span>
+                    <span class="text-hi" data-i18n-key="q4-question">4. क्या आप या आपके परिवार का कोई सदस्य वर्तमान में कोई सरकारी पद या संवैधानिक पद धारण कर रहा है या उससे सेवानिवृत्त हुआ है?</span>
+                </p>
+                <div class="space-y-4">
+                    <input type="radio" id="q4-no" name="q4-govt-post" value="eligible" class="hidden">
+                    <label for="q4-no" class="radio-label">
+                        <span class="font-bold mr-3" data-i18n-key="NO:">NO:</span>
+                        <span class="text-en" data-i18n-key="q4-no">Not related to government service/posts.</span>
+                        <span class="text-hi" data-i18n-key="q4-no">सरकारी सेवा/पदों से संबंधित नहीं।</span>
+                    </label>
+                    <input type="radio" id="q4-yes" name="q4-govt-post" value="ineligible" class="hidden">
+                    <label for="q4-yes" class="radio-label">
+                        <span class="font-bold mr-3" data-i18n-key="YES:">YES:</span>
+                        <span class="text-en" data-i18n-key="q4-yes">Current or retired official/post holder.</span>
+                        <span class="text-hi" data-i18n-key="q4-yes">वर्तमान या सेवानिवृत्त अधिकारी/पद धारक।</span>
+                    </label>
+                </div>
+            </div>
+            
+            
+            <div id="step-5" class="step-content hidden">
+                <p class="text-xl font-semibold text-gray-800 mb-6">
+                    <span class="text-en" data-i18n-key="q5-question">5. Are you or any family member receiving a monthly pension of ₹10,000 or more (excluding some categories)?</span>
+                    <span class="text-hi" data-i18n-key="q5-question">5. क्या आप या आपके परिवार का कोई सदस्य ₹10,000 या उससे अधिक की मासिक पेंशन प्राप्त कर रहा है (कुछ श्रेणियों को छोड़कर)?</span>
+                </p>
+                <p id="q5-note" class="text-sm text-gray-500 italic mb-4" data-en="Note: Also applies if you are a registered professional (Doctor, Engineer, Lawyer, CA, Architect)." data-hi="ध्यान दें: यह उन पंजीकृत पेशेवरों (डॉक्टर, इंजीनियर, वकील, सीए, वास्तुकार) पर भी लागू होता है।">
+                    Note: Also applies if you are a registered professional (Doctor, Engineer, Lawyer, CA, Architect).
+                </p>
+                <div class="space-y-4">
+                    <input type="radio" id="q5-no" name="q5-pension-pro" value="eligible" class="hidden">
+                    <label for="q5-no" class="radio-label">
+                        <span class="font-bold mr-3" data-i18n-key="NO:">NO:</span>
+                        <span class="text-en" data-i18n-key="q5-no">Pension is below ₹10k, and I am not a listed professional.</span>
+                        <span class="text-hi" data-i18n-key="q5-no">पेंशन ₹10 हजार से कम है, और मैं सूचीबद्ध पेशेवर नहीं हूँ।</span>
+                    </label>
+                    <input type="radio" id="q5-yes" name="q5-pension-pro" value="ineligible" class="hidden">
+                    <label for="q5-yes" class="radio-label">
+                        <span class="font-bold mr-3" data-i18n-key="YES:">YES:</span>
+                        <span class="text-en" data-i18n-key="q5-yes">Pension is ≥ ₹10k OR I am a listed professional.</span>
+                        <span class="text-hi" data-i18n-key="q5-yes">पेंशन ≥ ₹10 हजार है या मैं एक सूचीबद्ध पेशेवर हूँ।</span>
+                    </label>
+                </div>
+            </div>
+
+            
+            <div id="result-step" class="step-content hidden text-center">
+                <h2 id="result-title" class="text-3xl font-extrabold mb-4"></h2>
+                <div id="result-icon" class="mb-4 mx-auto"></div>
+                <p id="result-message" class="text-lg text-gray-700 mb-6"></p>
+                <a href="javascript:void(0);" id="restart-btn" class="bg-leaf-green text-farm-green px-6 py-3 rounded-lg font-semibold hover:bg-leaf-green/80 transition duration-300 inline-block shadow-md">
+                    Check Eligibility Again
+                </a>
+                <br>
+                <a href="https://rules.myscheme.gov.in/check-eligibility/pm-kisan?source=umang" target="_main">GO TO OFFICIAL WEBSITE</a>
+            </div>
+
+        </div>
+
+       
+        <div id="navigation-controls" class="flex justify-between mt-8 pt-4 border-t border-gray-200">
+            <button id="prev-btn" class="bg-gray-200 text-gray-700 px-5 py-2 rounded-lg font-semibold hover:bg-gray-300 transition duration-300 disabled:opacity-50" disabled>
+                Previous
+            </button>
+            <button id="next-btn" class="bg-accent-orange text-white px-5 py-2 rounded-lg font-semibold hover:bg-accent-orange/90 transition duration-300 disabled:opacity-50" disabled>
+                Next &rarr;
+            </button>
+            <button id="finish-btn" class="bg-farm-green text-white px-5 py-2 rounded-lg font-semibold hover:bg-farm-green/90 transition duration-300 disabled:opacity-50 hidden">
+                Get Result
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const steps = [
+                document.getElementById('step-1'),
+                document.getElementById('step-2'),
+                document.getElementById('step-3'),
+                document.getElementById('step-4'),
+                document.getElementById('step-5')
+            ];
+            const resultStep = document.getElementById('result-step');
+            const progressBar = document.getElementById('progress-bar');
+            const stepInfo = document.getElementById('step-info');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const finishBtn = document.getElementById('finish-btn');
+            const restartBtn = document.getElementById('restart-btn');
+            const formContainer = document.getElementById('eligibility-checker');
+            const langToggle = document.getElementById('lang-toggle');
+            const body = document.body;
+
+            let currentStep = 0;
+            const totalSteps = steps.length;
+            const answers = {}; 
+            let currentLang = 'en';
+
+            const translations = {
+                
+                'Switch to English': 'अंग्रेजी में स्विच करें',
+                'Switch to Hindi': 'Switch to Hindi',
+                'Previous': 'पिछला',
+                'Next &rarr;': 'अगला &rarr;',
+                'Get Result': 'परिणाम देखें',
+                'Check Eligibility Again': 'पात्रता की जाँच फिर से करें',
+                
+                
+                'Question': 'प्रश्न',
+                'of': 'में से',
+                'Start checking your eligibility': 'अपनी पात्रता की जाँच शुरू करें',
+                'Check Complete': 'जाँच पूरी',
+                
+            
+                
+                
+                'Great News: You Are Likely Eligible!': 'शुभ समाचार: आप संभावित रूप से पात्र हैं!',
+                'Ineligible Based on Criteria': 'मानदंडों के आधार पर अपात्र',
+
+                
+                'Congrats_Message': 'बधाई हो! आपके उत्तरों के आधार पर, आप पीएम किसान सम्मान निधि योजना के लिए संभावित रूप से पात्र प्रतीत होते हैं। अंतिम सत्यापन और आवेदन के लिए कृपया आधिकारिक सरकारी पोर्टल पर जाएँ।',
+                'reason_q1': 'पात्र होने के लिए आपके नाम पर पंजीकृत खेती योग्य कृषि भूमि होना आवश्यक है।',
+                'reason_q2': 'संस्थागत भूमि धारक (ट्रस्ट, सोसायटी) इस योजना के लिए पात्र नहीं हैं।',
+                'reason_q3': 'आयकर दाताओं को पीएम किसान योजना से बाहर रखा गया है।',
+                'reason_q4': 'वर्तमान या सेवानिवृत्त सरकारी कर्मचारियों/अधिकारियों को बाहर रखा गया है।',
+                'reason_q5': 'उच्च मासिक पेंशन (≥ ₹10 हजार) प्राप्त करने वाले और पंजीकृत पेशेवर बाहर रखे गए हैं।',
+                'reason_official_review': 'हम आधिकारिक योजना दिशानिर्देशों की समीक्षा करने की सलाह देते हैं।',
+                'Note:': 'ध्यान दें:',
+            };
+
+
+            
+            function getTranslation(key) {
+                if (currentLang === 'hi' && translations[key]) {
+                    return translations[key];
+                }
+                return key; 
+            }
+
+           
+            function translatePage() {
+                const isHindi = currentLang === 'hi';
+                
+               
+                langToggle.textContent = isHindi ? 'Switch to English' : 'हिंदी में स्विच करें';
+                
+                
+                prevBtn.textContent = getTranslation('Previous');
+                nextBtn.innerHTML = getTranslation('Next &rarr;');
+                finishBtn.textContent = getTranslation('Get Result');
+                restartBtn.textContent = getTranslation('Check Eligibility Again');
+
+                
+                document.getElementById('header-title').textContent = isHindi ? document.getElementById('header-title').getAttribute('data-hi') : document.getElementById('header-title').getAttribute('data-en');
+                document.getElementById('header-subtitle').textContent = isHindi ? document.getElementById('header-subtitle').getAttribute('data-hi') : document.getElementById('header-subtitle').getAttribute('data-en');
+                document.getElementById('q5-note').textContent = isHindi ? document.getElementById('q5-note').getAttribute('data-hi') : document.getElementById('q5-note').getAttribute('data-en');
+
+
+                
+                updateProgress();
+
+                
+                body.setAttribute('data-lang', currentLang);
+            }
+
+            
+
+            function updateProgress() {
+                const progressPercentage = (currentStep / totalSteps) * 100;
+                progressBar.style.width = `${progressPercentage}%`;
+                
+                let infoText;
+
+                if (currentStep > 0 && currentStep <= totalSteps) {
+                    infoText = `${getTranslation('Question')} ${currentStep} ${getTranslation('of')} ${totalSteps}`;
+                } else if (currentStep === 0) {
+                    infoText = getTranslation('Start checking your eligibility');
+                } else {
+                    infoText = getTranslation('Check Complete');
+                }
+                stepInfo.textContent = infoText;
+            }
+
+           
+            function showStep(index) {
+                
+                if (currentStep > 0 && currentStep <= totalSteps) {
+                    const stepElement = steps[currentStep - 1];
+                    const inputName = stepElement.querySelector('input[type="radio"]').name;
+                    const selected = formContainer.querySelector(`input[name="${inputName}"]:checked`);
+                    answers[inputName] = selected ? selected.value : null;
+                }
+                
+                
+                steps.forEach(step => step.classList.add('hidden'));
+                resultStep.classList.add('hidden');
+
+               
+                if (index > 0 && index <= totalSteps) {
+                    currentStep = index;
+                    steps[index - 1].classList.remove('hidden');
+                } else if (index === totalSteps + 1) {
+                    currentStep = totalSteps + 1; 
+                    showResult();
+                    return; 
+                } else {
+                    currentStep = 0;
+                }
+                
+              
+                updateProgress();
+                updateNavigationButtons();
+                updateNextButtonState();
+            }
+
+            
+            function updateNavigationButtons() {
+               
+                prevBtn.disabled = currentStep <= 1;
+
+                
+                if (currentStep < totalSteps) {
+                    nextBtn.classList.remove('hidden');
+                    finishBtn.classList.add('hidden');
+                    prevBtn.classList.remove('hidden');
+                } else if (currentStep === totalSteps) {
+                    nextBtn.classList.add('hidden');
+                    finishBtn.classList.remove('hidden');
+                    prevBtn.classList.remove('hidden');
+                } else { 
+                    nextBtn.classList.add('hidden');
+                    finishBtn.classList.add('hidden');
+                    prevBtn.classList.add('hidden'); 
+                    document.getElementById('navigation-controls').classList.add('hidden');
+                }
+            }
+
+            
+            function updateNextButtonState() {
+                if (currentStep > 0 && currentStep <= totalSteps) {
+                    const stepElement = steps[currentStep - 1];
+                    const inputName = stepElement.querySelector('input[type="radio"]').name;
+                    const selected = formContainer.querySelector(`input[name="${inputName}"]:checked`);
+                    
+                    const button = currentStep < totalSteps ? nextBtn : finishBtn;
+                    button.disabled = !selected;
+                }
+            }
+
+            
+            function showResult() {
+                let eligible = true;
+                let reasonKey = 'Congrats_Message';
+                let titleKey = 'Great News: You Are Likely Eligible!';
+                let iconHtml = '<svg class="w-16 h-16 text-farm-green mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2c-2.828 0-5.49 1.123-7.447 3.14M3.5 12V7.452M12 22a10 10 0 100-20 10 10 0 000 20z"></path></svg>';
+                
+                let disqualifyingKey = null;
+
+                for (const key in answers) {
+                    if (answers[key] === 'ineligible') {
+                        eligible = false;
+                        titleKey = "Ineligible Based on Criteria";
+                        iconHtml = '<svg class="w-16 h-16 text-accent-orange mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+                        
+                        if (key === 'q1-land-status') disqualifyingKey = 'reason_q1';
+                        else if (key === 'q2-institutional') disqualifyingKey = 'reason_q2';
+                        else if (key === 'q3-tax') disqualifyingKey = 'reason_q3';
+                        else if (key === 'q4-govt-post') disqualifyingKey = 'reason_q4';
+                        else if (key === 'q5-pension-pro') disqualifyingKey = 'reason_q5';
+                        
+                        break;
+                    }
+                }
+
+                document.getElementById('result-title').textContent = getTranslation(titleKey);
+                document.getElementById('result-icon').innerHTML = iconHtml;
+                
+                let resultMessage = getTranslation(reasonKey);
+                if (!eligible && disqualifyingKey) {
+                    resultMessage = `${getTranslation(disqualifyingKey)} ${getTranslation('reason_official_review')}`;
+                }
+
+                document.getElementById('result-message').textContent = resultMessage;
+                resultStep.classList.remove('hidden');
+                
+               
+                document.getElementById('navigation-controls').classList.add('hidden');
+            }
+
+            
+
+            langToggle.addEventListener('click', () => {
+                currentLang = (currentLang === 'en') ? 'hi' : 'en';
+                translatePage();
+            });
+
+            prevBtn.addEventListener('click', () => {
+                showStep(currentStep - 1);
+            });
+
+            nextBtn.addEventListener('click', () => {
+                showStep(currentStep + 1);
+            });
+
+            finishBtn.addEventListener('click', () => {
+                
+                showStep(totalSteps + 1); 
+            });
+
+            restartBtn.addEventListener('click', () => {
+                
+                currentStep = 0;
+                document.getElementById('navigation-controls').classList.remove('hidden');
+                
+                
+                formContainer.querySelectorAll('input[type="radio"]').forEach(input => input.checked = false);
+                for (const key in answers) { delete answers[key]; }
+                
+               
+                showStep(1); 
+                translatePage(); 
+            });
+
+            
+            formContainer.querySelectorAll('input[type="radio"]').forEach(radio => {
+                radio.addEventListener('change', updateNextButtonState);
+            });
+
+           
+
+            showStep(1);
+            translatePage(); 
+        });
+    </script>
+</body>
+</html>

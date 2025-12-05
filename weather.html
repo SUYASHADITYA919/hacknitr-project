@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmSync - Severe Alerts & Weather Monitoring</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'farm-green': '#38761D', 
+                        'leaf-green': '#A9D18E', 
+                        'soil-brown': '#654321', 
+                        'surface': '#f9fafb', 
+                        'alert-red': '#D64545', 
+                        'alert-orange': '#FF7F50', 
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        
+        .container-shadow {
+            box-shadow: 0 10px 30px rgba(56, 118, 29, 0.15);
+        }
+        .alert-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .alert-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(214, 69, 69, 0.15);
+        }
+        .loading-spinner {
+            border-top-color: #38761D;
+            -webkit-animation: spin 1s ease-in-out infinite;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-surface min-h-screen p-4 md:p-8 font-sans">
+
+    <div class="max-w-6xl mx-auto">
+        
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold text-farm-green mb-2">
+                FarmSync <span class="text-alert-red">Severe Alerts</span>
+            </h1>
+            <p class="text-xl text-gray-600">Immediate notifications for severe weather and pest outbreaks.</p>
+        </header>
+
+         <div id="status-message" class="hidden text-center p-3 rounded-xl text-sm mb-6 bg-blue-100 text-blue-800"></div>
+
+          <div class="bg-white p-6 md:p-8 rounded-xl container-shadow mb-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6 border-b pb-2 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-alert-red" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.398 17c-.77 1.333.192 3 1.732 3z"></path></svg>
+                Current Alerts in Your Area
+            </h2>
+            
+            <div id="alerts-container" class="space-y-4">
+               <div class="bg-agri-light p-6 rounded-2xl shadow-xl border-l-8 border-agri-green flex flex-col md:flex-row items-start scroll-reveal">
+                    <div class="flex-shrink-0 mr-6 mb-4 md:mb-0 text-5xl text-agri-dark"><i class="fa-solid fa-money-bill-transfer"></i></div>
+                    <div class="flex-grow">
+                        <h3 class="text-2xl font-bold text-agri-dark mb-2">SEVERE FROST WARNING</h3>
+                        <p class="text-gray-700">Temperatures expected to drop below 0°C tonight. Protect sensitive crops like potato and tomato.</p>
+                    </div>
+                </div>   
+                <div class="bg-agri-light p-6 rounded-2xl shadow-xl border-l-8 border-agri-green flex flex-col md:flex-row items-start scroll-reveal">
+                    <div class="flex-shrink-0 mr-6 mb-4 md:mb-0 text-5xl text-agri-dark"><i class="fa-solid fa-money-bill-transfer"></i></div>
+                    <div class="flex-grow">
+                        <h3 class="text-2xl font-bold text-agri-dark mb-2">PEST ALERT</h3>
+                        <p class="text-gray-700">High incidence of Fall Armyworm detected in Maize fields. Monitor plants and apply targeted pesticides.</p>
+                    </div>
+                </div> 
+                <div class="bg-agri-light p-6 rounded-2xl shadow-xl border-l-8 border-agri-green flex flex-col md:flex-row items-start scroll-reveal">
+                    <div class="flex-shrink-0 mr-6 mb-4 md:mb-0 text-5xl text-agri-dark"><i class="fa-solid fa-money-bill-transfer"></i></div>
+                    <div class="flex-grow">
+                        <h3 class="text-2xl font-bold text-agri-dark mb-2">HAIL ALERT</h3>
+                        <p class="text-gray-700">Isolated thunderstorms with potential for small hail over the next 48 hours.</p>
+                    </div>
+                </div>
+        </div>
+</div>
+    <div></div>    
+        <div class="bg-white p-6 md:p-8 rounded-xl container-shadow">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6 border-b pb-2 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-farm-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4 4 0 003 15z"></path></svg>
+                Real-Time Weather Check
+            </h2>
+            
+            <div class="flex flex-col md:flex-row gap-4 mb-4">
+                <input type="text" id="location-input" placeholder="Enter Village/City or Pincode" class="flex-grow p-3 border-2 border-gray-300 rounded-lg focus:border-farm-green focus:ring focus:ring-leaf-green/50">
+                <button id="check-weather-btn" class="bg-farm-green text-white px-6 py-3 rounded-xl font-medium hover:bg-farm-green/90 transition duration-300 disabled:opacity-50">
+                    Check Current Conditions
+                </button>
+            </div>
+            
+            <div id="weather-result" class="mt-6 p-4 bg-leaf-green/20 border-l-4 border-farm-green rounded-lg hidden">
+                <p class="text-gray-700 italic">Enter a location above to get real-time weather data.</p>
+               
+            </div>
+        </div>
+
+    </div>
+
+   
+    <script type="module">
+        
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            doc, 
+            setDoc, 
+            onSnapshot, 
+            collection, 
+            getDocs 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        
+        const alertsContainer = document.getElementById('alerts-container');
+        const loadingAlerts = document.getElementById('loading-alerts');
+        const statusMessage = document.getElementById('status-message');
+        const locationInput = document.getElementById('location-input');
+        const checkWeatherBtn = document.getElementById('check-weather-btn');
+        const weatherResult = document.getElementById('weather-result');
+
+        
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let db, auth;
+        let isAuthReady = false;
+        let userId = null;
+
+        const ALERTS_COLLECTION_PATH = `/artifacts/${appId}/public/data/severe_alerts`;
+        
+       
+        function renderAlertCard(alert) {
+            const isSevere = alert.severity === 'Severe';
+            const bgColor = isSevere ? 'bg-alert-red/10 border-alert-red' : 'bg-alert-orange/10 border-alert-orange';
+            const textColor = isSevere ? 'text-alert-red' : 'text-alert-orange';
+            const iconPath = isSevere 
+                ? 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.398 17c-.77 1.333.192 3 1.732 3z'
+                : 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z';
+
+            return `
+                <div class="alert-card p-4 rounded-xl border-l-8 ${bgColor} shadow-sm">
+                    <div class="flex items-start">
+                        <svg class="w-6 h-6 mr-3 mt-1 ${textColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${iconPath}"></path>
+                        </svg>
+                        <div class="flex-grow">
+                            <h3 class="text-lg font-bold ${textColor}">${alert.type}: ${alert.title}</h3>
+                            <p class="text-sm text-gray-700 mt-1">${alert.description}</p>
+                            <p class="text-xs text-gray-500 mt-2">
+                                <span class="font-medium">Area:</span> ${alert.area} | 
+                                <span class="font-medium">Issued:</span> ${new Date(alert.timestamp).toLocaleDateString()}
+                            </p>
+                            <p class="text-xs font-semibold ${textColor} mt-1">
+                                <span class="uppercase">${alert.severity}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+       
+        function showStatus(message, className) {
+            statusMessage.innerHTML = message;
+            statusMessage.className = `text-center p-3 rounded-xl text-sm mb-6 ${className}`;
+            statusMessage.classList.remove('hidden');
+        }
+
+        
+        async function initializeAndAuthenticate() {
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                onAuthStateChanged(auth, (user) => {
+                    userId = user?.uid || crypto.randomUUID();
+                    isAuthReady = true;
+                    console.log("Firebase Auth Ready. User ID:", userId);
+                   
+                    setupAlertsListener();
+                });
+            } catch (error) {
+                console.error("Firebase initialization or authentication failed:", error);
+                showStatus('Error: Failed to connect to alert service.', 'bg-red-100 text-red-700');
+            }
+        }
+
+        
+        
+        async function initializeAlertsData() {
+            const collectionRef = collection(db, ALERTS_COLLECTION_PATH);
+            const snapshot = await getDocs(collectionRef);
+
+            if (snapshot.empty) {
+                console.log("No severe alerts found. Initializing mock data...");
+                const mockData = [
+                    { 
+                        id: 'frost', 
+                        type: "Weather Alert", 
+                        title: " FrosSeveret Warning", 
+                        description: "Temperatures expected to drop below 0°C tonight. Protect sensitive crops like potato and tomato.",
+                        severity: "Severe",
+                        area: "Northern India (Punjab, Haryana)",
+                        timestamp: Date.now() - 3600000, 
+                    },
+                    { 
+                        id: 'armyworm', 
+                        type: "Pest Alert", 
+                        title: "Fall Armyworm Outbreak", 
+                        description: "High incidence of Fall Armyworm detected in Maize fields. Monitor plants and apply targeted pesticides.",
+                        severity: "Warning",
+                        area: "Central India (Maharashtra, MP)",
+                        timestamp: Date.now() - 86400000, 
+                    },
+                    { 
+                        id: 'hail', 
+                        type: "Weather Alert", 
+                        title: "Localized Hailstorm Risk", 
+                        description: "Isolated thunderstorms with potential for small hail over the next 48 hours.",
+                        severity: "Warning",
+                        area: "Eastern India (Bihar, Bengal)",
+                        timestamp: Date.now(),
+                    },
+                ];
+
+                for (const item of mockData) {
+                    const docRef = doc(db, ALERTS_COLLECTION_PATH, item.id);
+                    await setDoc(docRef, item);
+                }
+                showStatus('Severe alerts loaded and monitored.', 'bg-green-100 text-farm-green');
+            }
+        }
+
+        
+        function setupAlertsListener() {
+            if (!isAuthReady || !db) return;
+
+            
+            initializeAlertsData().then(() => {
+                const collectionRef = collection(db, ALERTS_COLLECTION_PATH);
+
+                onSnapshot(collectionRef, (snapshot) => {
+                    loadingAlerts.classList.add('hidden');
+                    alertsContainer.innerHTML = '';
+                    
+                    if (snapshot.empty) {
+                        alertsContainer.innerHTML = '<p class="text-center text-gray-500 italic">No severe alerts currently active.</p>';
+                        return;
+                    }
+
+                    snapshot.docs.forEach(doc => {
+                        const data = doc.data();
+                        alertsContainer.innerHTML += renderAlertCard(data);
+                    });
+                    showStatus(`Found ${snapshot.docs.length} active alerts.`, 'bg-red-100 text-alert-red');
+                }, (error) => {
+                    console.error("Error listening to alerts data:", error);
+                    showStatus('Error: Failed to fetch real-time alerts.', 'bg-red-100 text-red-700');
+                });
+            });
+        }
+
+       
+        async function fetchRealTimeWeather(location) {
+            checkWeatherBtn.disabled = true;
+            checkWeatherBtn.innerHTML = '<span class="loading-spinner ease-linear rounded-full border-2 border-t-2 border-white h-4 w-4 inline-block mr-2"></span> Getting data...';
+            weatherResult.classList.add('hidden');
+
+            try {
+                await new Promise(resolve => setTimeout(resolve, 1200)); 
+                const mockResponse = {
+                    location: location,
+                    temp: 28,
+                    condition: "Partly Cloudy",
+                    humidity: 65,
+                    windSpeed: 12,
+                    alert: location.toLowerCase().includes('delhi') ? 'Yes (High Pollution Advisory)' : 'No',
+                };
+                
+
+                displayWeather(mockResponse);
+
+            } catch (error) {
+                console.error("Weather API error:", error);
+                weatherResult.innerHTML = `<p class="text-red-700 font-semibold">Error fetching weather data for ${location}. Please check your API key or connection.</p>`;
+                weatherResult.classList.remove('hidden');
+            } finally {
+                checkWeatherBtn.disabled = false;
+                checkWeatherBtn.innerHTML = 'Check Current Conditions';
+            }
+        }
+
+       
+        function displayWeather(data) {
+            const alertClass = data.alert !== 'No' ? 'bg-alert-red/10 border-alert-red' : 'bg-farm-green/10 border-farm-green';
+            const alertText = data.alert !== 'No' ? `<span class="text-alert-red font-semibold">${data.alert}</span>` : 'No immediate advisories.';
+            
+            weatherResult.innerHTML = `
+                <div class="space-y-3 p-3 ${alertClass} rounded-lg">
+                    <p class="text-xl font-bold text-farm-green">${data.location} Conditions</p>
+                    <div class="grid grid-cols-2 gap-2 text-gray-700 text-sm">
+                        <p><span class="font-semibold">Temperature:</span> ${data.temp}°C</p>
+                        <p><span class="font-semibold">Condition:</span> ${data.condition}</p>
+                        <p><span class="font-semibold">Humidity:</span> ${data.humidity}%</p>
+                        <p><span class="font-semibold">Wind Speed:</span> ${data.windSpeed} km/h</p>
+                    </div>
+                    <p class="text-sm font-medium border-t pt-2">Advisory: ${alertText}</p>
+                </div>
+            `;
+            weatherResult.classList.remove('hidden');
+        }
+
+       
+        function handleWeatherCheck() {
+            const location = locationInput.value.trim();
+            if (!location) {
+                weatherResult.innerHTML = '<p class="text-red-700 font-semibold">Please enter a valid location (City/Pincode).</p>';
+                weatherResult.classList.remove('hidden');
+                return;
+            }
+            fetchRealTimeWeather(location);
+        }
+
+       
+        checkWeatherBtn.addEventListener('click', handleWeatherCheck);
+        
+        initializeAndAuthenticate();
+
+    </script>
+</body>
+</html>

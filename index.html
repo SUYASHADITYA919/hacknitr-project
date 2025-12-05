@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmSync - Future of Farming</title>
+   
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'agri-green': '#4CAF50', 
+                        'agri-dark': '#1B5E20',  
+                        'agri-light': '#E8F5E9',
+                        'agri-soil': '#795548',  
+                        'agri-sun': '#FFB300',   
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7fcf9;
+            scroll-behavior: smooth;
+        }
+
+        
+        #hero-section {
+            background-image: url("C:\Users\suyas\Downloads\agri1.jpg");
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            background: linear-gradient(180deg, rgba(27, 94, 32, 0.7) 0%, rgba(76, 175, 80, 0.4) 100%);
+            animation: fadeIn 1.5s ease-out;
+        }
+
+        
+        .feature-card {
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            cursor: pointer;
+        }
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 25px 50px -12px rgba(76, 175, 80, 0.5);
+        }
+
+        
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+        }
+        .scroll-reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+       
+        .loading-dots span {
+            animation: bounce 1s infinite;
+        }
+        .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-8px); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="sticky top-0 z-50 bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div class="text-3xl font-extrabold text-agri-dark flex items-center">
+                <i class="fa-solid fa-tractor mr-3 text-agri-green animate-pulse"></i> <a href="index.html">FarmSync</a>
+            </div>
+            <nav class="hidden md:flex space-x-8 text-gray-700 font-medium">
+                <a href="#features" class="hover:text-agri-green transition duration-300">Features</a>
+                <a href="#ai-advisor" class="hover:text-agri-green transition duration-300">AI Advisor</a>
+                <a href="#weather" class="hover:text-agri-green transition duration-300">Weather</a>
+                <a href="#market" class="hover:text-agri-green transition duration-300">Market</a>
+                <a href="#schemes" class="hover:text-agri-green transition duration-300">Schemes</a>
+            </nav>
+            <a href="login.html" target=_main" class="bg-agri-green text-white px-6 py-2 rounded-full font-semibold hover:bg-agri-dark transition duration-300 shadow-xl hidden sm:block">
+                LOGIN 
+            </a>
+        </div>
+    </header>
+
+    
+    <section id="hero-section" class="relative text-white h-[90vh] flex items-center justify-center p-4">
+        
+        <div class="z-10 text-center max-w-5xl">
+            <h1 class="text-5xl sm:text-7xl font-black mb-4 leading-tight tracking-wider">
+                Smarter Farming, Better Yields
+            </h1>
+            <p class="text-xl sm:text-2xl mb-10 font-light">
+                Your one-stop digital hub for knowledge, resilience, and prosperity in agriculture.
+            </p>
+            <div class="space-x-4">
+                <a href="#features" class="bg-agri-sun text-agri-dark text-lg font-bold px-10 py-4 rounded-full transition duration-300 shadow-2xl hover:bg-yellow-600 inline-block transform hover:scale-105">
+                    Discover Tools <i class="fa-solid fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+        </div>
+        
+        <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 lg:left-auto lg:right-16 z-20">
+        <img src="C:\Users\suyas\Documents\black box\codes\farmer1.webp" alt="Smiling farmer" class="rounded-t-2xl shadow-2xl border-4 border-agri-light transition-all duration-700 ease-in-out hover:shadow-agri-green/50 hover:border-agri-sun">
+        </div>
+    </section>
+
+   
+    <section id="features" class="py-24 bg-agri-light">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-4xl font-extrabold text-center text-agri-dark mb-4 scroll-reveal">
+                Empowering Tools in Your Hand
+            </h2>
+            <p class="text-center text-gray-600 mb-16 text-xl scroll-reveal">
+                From pest control to profit margin, we cover every aspect of modern agriculture.
+            </p>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-10">
+                
+                <div class="feature-card bg-white p-8 rounded-2xl shadow-xl text-center scroll-reveal delay-100">
+                    <a href="diagnose.html" target="_main">
+                    <i class="fa-solid fa-microchip text-6xl text-agri-green mb-4"></i>
+                    <h3 class="text-xl font-bold text-agri-dark mb-2">AI Diagnosis</h3>
+                    <p class="text-gray-600">Instantly diagnose crop diseases and get science-backed treatments.</p></a>
+                </div>
+                
+                <div class="feature-card bg-white p-8 rounded-2xl shadow-xl text-center scroll-reveal delay-200">
+                    <a href="prices.html" target="_main">
+                    <i class="fa-solid fa-dollar-sign text-6xl text-agri-green mb-4"></i>
+                    <h3 class="text-xl font-bold text-agri-dark mb-2">Real-time Prices</h3>
+                    <p class="text-gray-600">Access daily Mandi prices and forecast demand shifts to maximize profit.</p></a>
+                </div>
+                
+                <div class="feature-card bg-white p-8 rounded-2xl shadow-xl text-center scroll-reveal delay-300">
+                    <a href="weather.html" target="_main">
+                    <i class="fa-solid fa-bell text-6xl text-agri-green mb-4"></i>
+                    <h3 class="text-xl font-bold text-agri-dark mb-2">Severe Alerts</h3>
+                    <p class="text-gray-600">Receive immediate alerts for severe weather or pest outbreaks in your area.</p></a>
+                </div>
+                
+                <div class="feature-card bg-white p-8 rounded-2xl shadow-xl text-center scroll-reveal delay-400">
+                    <a href="scheme.html" target="_main">
+                    <i class="fa-solid fa-hands-holding-circle text-6xl text-agri-green mb-4"></i>
+                    <h3 class="text-xl font-bold text-agri-dark mb-2">Scheme Finder</h3>
+                    <p class="text-gray-600">Personalized recommendations for relevant government subsidies and loans.</p></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="ai-advisor" class="py-24 bg-white">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-4xl font-extrabold text-center text-agri-dark mb-4 scroll-reveal">
+                <i class="fa-solid fa-robot mr-3 text-agri-green"></i> The FarmSync AI Assistant
+            </h2>
+            <p class="text-center text-gray-600 mb-12 text-xl scroll-reveal">
+                Powered by Gemini, our AI provides grounded, up-to-date agricultural advice instantly using real-time web search.
+            </p>
+
+            <div class="bg-agri-dark p-8 rounded-3xl shadow-2xl scroll-reveal">
+                <div id="chat-history" class="h-96 overflow-y-auto space-y-4 mb-6 p-4 bg-agri-light rounded-2xl border-2 border-agri-green/50">
+                    <div class="flex justify-start">
+                        <div class="bg-agri-green text-white p-4 rounded-tr-xl rounded-bl-xl rounded-br-xl max-w-xl shadow-md">
+                            <p class="font-semibold mb-1">FarmSync AI</p>
+                            <p class="text-sm">Hello! I'm here to help you farm smarter. Ask me about **pests, fertilizer recommendations,** or **today's crop prices**.</p>
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div class="flex space-x-4">
+                    <input type="text" id="user-input" placeholder="E.g., What are the current prices for Soybean in my region?"
+                           class="flex-grow p-4 border-2 border-agri-green rounded-full focus:outline-none focus:ring-4 focus:ring-agri-sun/50 transition duration-300 text-gray-800">
+                    <button id="send-btn" class="bg-agri-sun text-agri-dark px-8 py-4 rounded-full font-bold hover:bg-yellow-600 transition duration-300 disabled:opacity-50 flex items-center justify-center shadow-lg transform hover:scale-[1.02]">
+                        <i class="fa-solid fa-magnifying-glass mr-2"></i> Query
+                    </button>
+                </div>
+
+               
+                <p id="status-message" class="mt-4 text-sm text-agri-sun hidden font-medium text-center">
+                    
+                </p>
+            </div>
+        </div>
+    </section>
+    
+    
+    <section id="weather" class="py-24 bg-agri-light">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-4xl font-extrabold text-center text-agri-dark mb-4 scroll-reveal">
+                Hyper-local Weather Resilience
+            </h2>
+            <p class="text-center text-gray-600 mb-12 text-xl scroll-reveal">
+                Prepare for timely irrigation, planting, and harvesting with accurate 7-day forecasts.
+            </p>
+
+            <div class="grid md:grid-cols-5 gap-6 text-center">
+                
+                <div class="bg-white p-6 rounded-2xl shadow-xl border-t-4 border-agri-green scroll-reveal delay-100 transform hover:scale-105 transition">
+                    <a href="weather.html" target="_main">
+                    <p class="text-lg font-bold text-agri-dark mb-2">Today</p>
+                    <i class="fa-solid fa-cloud-sun text-6xl text-agri-sun mb-4"></i>
+                    <p class="text-3xl font-extrabold text-agri-green">32°C</p>
+                    <p class="text-sm text-gray-500">25% Rain Chance</p>
+                </a></div>
+                
+                <div class="bg-white p-6 rounded-2xl shadow-xl border-t-4 border-agri-green/50 scroll-reveal delay-200 transform hover:scale-105 transition">
+                    <a href="weather.html" target="_main">
+                    <p class="text-lg font-bold text-agri-dark mb-2">Wed</p>
+                    <i class="fa-solid fa-sun text-6xl text-agri-sun mb-4"></i>
+                    <p class="text-3xl font-extrabold text-agri-green">34°C</p>
+                    <p class="text-sm text-gray-500">0% Rain Chance</p>
+                </a></div>
+               
+                <div class="bg-red-50 p-6 rounded-2xl shadow-xl border-t-4 border-red-600 scroll-reveal delay-300 transform hover:scale-105 transition">
+                    <a href="weather.html" target="_main">
+                    <p class="text-lg font-bold text-red-600 mb-2">Thu <i class="fa-solid fa-triangle-exclamation animate-pulse ml-1"></i></p>
+                    <i class="fa-solid fa-cloud-showers-heavy text-6xl text-blue-500 mb-4"></i>
+                    <p class="text-3xl font-extrabold text-red-600">26°C</p>
+                    <p class="text-sm text-red-600 font-bold">95% Heavy Rain</p>
+                </a></div>
+              
+                <div class="bg-white p-6 rounded-2xl shadow-xl border-t-4 border-agri-green/50 scroll-reveal delay-400 transform hover:scale-105 transition">
+                    <a href="weather.html" target="_main">
+                    <p class="text-lg font-bold text-agri-dark mb-2">Fri</p>
+                    <i class="fa-solid fa-wind text-6xl text-gray-400 mb-4"></i>
+                    <p class="text-3xl font-extrabold text-agri-green">28°C</p>
+                    <p class="text-sm text-gray-500">High Winds</p>
+                </a></div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-xl border-t-4 border-agri-green/50 scroll-reveal delay-500 transform hover:scale-105 transition">
+                    <a href="weather.html" target="_main">
+                    <p class="text-lg font-bold text-agri-dark mb-2">Sat</p>
+                    <i class="fa-solid fa-cloud text-6xl text-blue-300 mb-4"></i>
+                    <p class="text-3xl font-extrabold text-agri-green">30°C</p>
+                    <p class="text-sm text-gray-500">10% Rain Chance</p>
+                </a></div>
+            </div>
+        </div>
+    </section>
+
+    
+    <section id="market" class="py-24 bg-agri-dark text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-4xl font-extrabold text-center mb-4 scroll-reveal">
+                Maximize Your Market Value
+            </h2>
+            <p class="text-center text-agri-light mb-16 text-xl scroll-reveal">
+                Track Mandi rates, export demand, and local prices for smart selling decisions.
+            </p>
+
+            <div class="grid lg:grid-cols-3 gap-10">
+                
+                <div class="lg:col-span-2 space-y-4">
+                   
+                    <div class="flex justify-between items-center bg-white/10 p-5 rounded-xl shadow-lg scroll-reveal">
+                        <div class="flex items-center">
+                            <i class="fa-solid fa-wheat-awn text-3xl mr-4 text-agri-sun"></i>
+                            <div>
+                                <h3 class="text-2xl font-bold">Wheat (Rabi)</h3>
+                                <p class="text-sm text-gray-300">Minimum Support Price (MSP): ₹ 2,400</p>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-3xl font-extrabold text-agri-green">₹ 2,750/Qtl</p>
+                            <p class="text-sm text-red-400 text-right"><i class="fa-solid fa-arrow-down mr-1"></i> -1.5% Today</p>
+                        </div>
+                    </div>
+                   
+                    <div class="flex justify-between items-center bg-white/10 p-5 rounded-xl shadow-lg scroll-reveal">
+                        <div class="flex items-center">
+                            <i class="fa-solid fa-seedling text-3xl mr-4 text-agri-sun"></i>
+                            <div>
+                                <h3 class="text-2xl font-bold">Soybean</h3>
+                                <p class="text-sm text-gray-300">Futures Index Price</p>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-3xl font-extrabold text-agri-green">₹ 4,920/Qtl</p>
+                            <p class="text-sm text-agri-green text-right"><i class="fa-solid fa-arrow-up mr-1"></i> +0.8% Today</p>
+                        </div>
+                    </div>
+                   
+                    <div class="flex justify-between items-center bg-white/10 p-5 rounded-xl shadow-lg scroll-reveal">
+                        <div class="flex items-center">
+                            <i class="fa-solid fa-hand-holding-dollar text-3xl mr-4 text-agri-sun"></i>
+                            <div>
+                                <h3 class="text-2xl font-bold">Chilli (Dry)</h3>
+                                <p class="text-sm text-gray-300">Average Export Quality Price</p>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-3xl font-extrabold text-agri-green">₹ 14,000/Qtl</p>
+                            <p class="text-sm text-gray-400 text-right">No Change</p>
+                        </div>
+                    </div>
+                </div>
+
+             
+                <div class="bg-agri-soil p-8 rounded-2xl shadow-2xl lg:sticky lg:top-20 h-fit scroll-reveal">
+                    <i class="fa-solid fa-quote-left text-4xl text-agri-sun mb-4"></i>
+                    <p class="text-xl italic mb-6">"I checked FarmSync before selling my paddy. The real-time rate advice helped me secure ₹200 more per quintal. This app pays for itself!"</p>
+                    <div class="flex items-center">
+                        <img src="https://placehold.co/60x60/agri-green/ffffff?text=F" alt="Farmer Profile" class="rounded-full mr-3 border-2 border-agri-sun">
+                        <div>
+                            <p class="font-bold text-agri-light">Ramesh Kumar</p>
+                            <p class="text-sm text-agri-light/70">Paddy Cultivator, Punjab</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+ 
+    <section id="schemes" class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-4xl font-extrabold text-center text-agri-dark mb-12 scroll-reveal">
+                Government Schemes & Eligibility
+            </h2>
+
+            <div class="space-y-8">
+               
+                <div class="bg-agri-light p-6 rounded-2xl shadow-xl border-l-8 border-agri-green flex flex-col md:flex-row items-start scroll-reveal">
+                    <div class="flex-shrink-0 mr-6 mb-4 md:mb-0 text-5xl text-agri-dark"><i class="fa-solid fa-money-bill-transfer"></i></div>
+                    <div class="flex-grow">
+                        <h3 class="text-2xl font-bold text-agri-dark mb-2">PM-KISAN: Income Support</h3>
+                        <p class="text-gray-700">Direct income support of ₹6,000 per year for all eligible farmer families. We handle the documentation process for renewal.</p>
+                    </div>
+                    <a href="eligibility.html" target="_main" class="mt-4 md:mt-0 bg-agri-green text-white px-5 py-2 rounded-full font-semibold hover:bg-agri-dark transition duration-300 self-center">Check Eligibility</a>
+                </div>
+
+                <div class="bg-agri-light p-6 rounded-2xl shadow-xl border-l-8 border-agri-green flex flex-col md:flex-row items-start scroll-reveal">
+                    <div class="flex-shrink-0 mr-6 mb-4 md:mb-0 text-5xl text-agri-dark"><i class="fa-solid fa-umbrella"></i></div>
+                    <div class="flex-grow">
+                        <h3 class="text-2xl font-bold text-agri-dark mb-2">PMFBY: Crop Insurance</h3>
+                        <p class="text-gray-700">Protection against crop failure due to natural calamities. Our platform simplifies premium calculation and claim filing.</p>
+                    </div>
+                    <a href="https://pmfby.gov.in/" target="_main" class="mt-4 md:mt-0 bg-agri-green text-white px-5 py-2 rounded-full font-semibold hover:bg-agri-dark transition duration-300 self-center">View Details</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    
+    <footer class="bg-agri-dark text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h3 class="text-2xl font-extrabold mb-3 text-agri-green">FarmSync: Cultivating the Future</h3>
+            <p class="text-gray-400 mb-6">Designed and developed with love by Team Hackiechans.</p>
+            <div class="flex justify-center space-x-6 mb-6">
+                <a href="#" class="text-gray-400 hover:text-agri-sun transition duration-300 text-xl"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="text-gray-400 hover:text-agri-sun transition duration-300 text-xl"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="text-gray-400 hover:text-agri-sun transition duration-300 text-xl"><i class="fa-solid fa-envelope"></i></a>
+            </div>
+            <p class="text-sm text-gray-500">&copy; 2025 FarmSync. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const userInput = document.getElementById('user-input');
+            const sendBtn = document.getElementById('send-btn');
+            const chatHistory = document.getElementById('chat-history');
+            const statusMessage = document.getElementById('status-message');
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+          
+
+            
+            const scrollToBottom = () => {
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+            };
+
+         
+            const addUserMessage = (text) => {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'flex justify-end scroll-reveal visible';
+                msgDiv.innerHTML = `
+                    <div class="bg-agri-green text-white p-3 rounded-tl-xl rounded-bl-xl rounded-br-xl max-w-xl shadow-lg">
+                        <p class="text-sm">${text}</p>
+                    </div>
+                `;
+                chatHistory.appendChild(msgDiv);
+                scrollToBottom();
+            };
+
+          
+            const addAIMessage = (text, isLoading = false) => {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'flex justify-start scroll-reveal visible';
+                let contentHTML = '';
+
+                if (isLoading) {
+                    contentHTML = `
+                        <p class="font-semibold">AgriConnect AI</p>
+                        <div class="loading-dots flex space-x-1 mt-1">
+                            <span class="w-3 h-3 bg-agri-sun rounded-full"></span>
+                            <span class="w-3 h-3 bg-agri-sun rounded-full"></span>
+                            <span class="w-3 h-3 bg-agri-sun rounded-full"></span>
+                        </div>
+                    `;
+                } else {
+                  
+                    contentHTML = `
+                        <p class="font-semibold mb-1">AgriConnect AI</p>
+                        <p class="text-sm">${text}</p>
+                    `;
+                }
+                
+                msgDiv.innerHTML = `
+                    <div class="bg-agri-dark text-white p-4 rounded-tr-xl rounded-bl-xl rounded-br-xl max-w-xl shadow-lg" id="${isLoading ? 'loading-indicator' : ''}">
+                        ${contentHTML}
+                    </div>
+                `;
+                chatHistory.appendChild(msgDiv);
+                scrollToBottom();
+                return msgDiv.querySelector('#loading-indicator');
+            };
+
+           
+
+            const fetchWithRetry = async (url, options, maxRetries = 5) => {
+                for (let i = 0; i < maxRetries; i++) {
+                    try {
+                        const response = await fetch(url, options);
+                        if (response.ok) {
+                            return response;
+                        }
+                       
+                        throw new Error(`Server error: ${response.statusText}`);
+                    } catch (error) {
+                       
+                        if (i === maxRetries - 1) throw error; 
+
+                        const delay = Math.pow(2, i) * 1000 + Math.random() * 500;
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                    }
+                }
+            };
+
+            const generateText = async (query) => {
+                
+                const systemPrompt = "You are the AgriConnect AI Crop Advisor. Your goal is to provide helpful, practical, and science-backed advice to farmers. Be concise, easy to understand, and always prioritize sustainable and safe farming practices. Use Google Search to find current prices, latest scheme details, or location-specific advice if needed.";
+                
+                const payload = {
+                    contents: [{ parts: [{ text: query }] }],
+                   
+                    tools: [{ "google_search": {} }], 
+                    systemInstruction: {
+                        parts: [{ text: systemPrompt }]
+                    },
+                };
+
+                const options = {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                };
+
+                try {
+                    const response = await fetchWithRetry(apiUrl, options);
+                    const result = await response.json();
+                    
+                    const candidate = result.candidates?.[0];
+
+                    if (candidate && candidate.content?.parts?.[0]?.text) {
+                        const text = candidate.content.parts[0].text;
+                        let sources = [];
+
+                  
+                        const groundingMetadata = candidate.groundingMetadata;
+                        if (groundingMetadata && groundingMetadata.groundingAttributions) {
+                            sources = groundingMetadata.groundingAttributions
+                                .map(attribution => ({
+                                    uri: attribution.web?.uri,
+                                    title: attribution.web?.title,
+                                }))
+                                .filter(source => source.uri && source.title);
+                        }
+
+                        let responseText = text;
+                        if (sources.length > 0) {
+                            const citationList = sources.map((s, index) => 
+                                `<a href="${s.uri}" target="_blank" class="text-agri-sun hover:underline">${s.title.substring(0, 40)}...</a>`
+                            ).join(' | ');
+                            responseText += `<br><br><span class="text-xs italic border-t border-gray-600 pt-2 block">Sources: ${citationList}</span>`;
+                        }
+                        
+                        return responseText;
+
+                    } else if (result.error) {
+                         console.error("API Error:", result.error.message);
+                         return "Sorry, I encountered an API error. Please try again.";
+                    } else {
+                        return "I didn't receive a clear response from the advisor. Can you rephrase your question?";
+                    }
+                } catch (error) {
+                    console.error("Fetch failed:", error);
+                    statusMessage.textContent = 'AI service error. Please check the console.';
+                    statusMessage.classList.remove('hidden');
+                    return "A critical network error occurred. Please try again.";
+                }
+            };
+
+            const handleSend = async () => {
+                const query = userInput.value.trim();
+                if (!query) return;
+
+             
+                statusMessage.classList.add('hidden');
+
+           
+                addUserMessage(query);
+                userInput.value = '';
+
+              
+                sendBtn.disabled = true;
+                userInput.disabled = true;
+                const loadingElement = addAIMessage(null, true);
+
+            
+                const aiResponse = await generateText(query);
+
+              
+                const responseContainer = loadingElement.parentElement;
+                if (responseContainer) {
+                    responseContainer.innerHTML = `
+                        <p class="font-semibold mb-1">AgriConnect AI</p>
+                        <p class="text-sm">${aiResponse}</p>
+                    `;
+                }
+
+            
+                sendBtn.disabled = false;
+                userInput.disabled = false;
+                userInput.focus();
+                scrollToBottom();
+            };
+
+           
+            sendBtn.addEventListener('click', handleSend);
+            userInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !sendBtn.disabled) {
+                    handleSend();
+                }
+            });
+
+           
+            const revealElements = document.querySelectorAll('.scroll-reveal');
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.15 
+            });
+
+            revealElements.forEach(el => {
+                observer.observe(el);
+            });
+        });
+    </script>
+</body>
+</html>

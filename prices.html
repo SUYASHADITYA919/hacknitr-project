@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmSync - Real-time Prices & Forecast</title>
+   
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'farm-green': '#38761D', 
+                        'leaf-green': '#A9D18E', 
+                        'soil-brown': '#654321', 
+                        'surface': '#f9fafb', 
+                        'accent-yellow': '#F9A825',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+       
+        .container-shadow {
+            box-shadow: 0 10px 30px rgba(56, 118, 29, 0.15);
+        }
+        .data-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .data-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(56, 118, 29, 0.2);
+        }
+        .loading-spinner {
+            border-top-color: #38761D;
+            -webkit-animation: spin 1s ease-in-out infinite;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-surface min-h-screen p-4 md:p-8 font-sans">
+ <!-- Main Container -->
+    <div class="max-w-6xl mx-auto">
+        
+        
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold text-farm-green mb-2">
+                FarmSync <span class="text-accent-yellow">Market Pulse</span>
+            </h1>
+            <p class="text-xl text-gray-600">Access daily Mandi prices and demand forecasts in real-time.</p>
+        </header>
+
+       
+        <div id="status-message" class="hidden text-center p-3 rounded-xl text-sm mb-6 bg-blue-100 text-blue-800"></div>
+
+       
+        <div class="bg-white p-6 md:p-8 rounded-xl container-shadow mb-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6 border-b pb-2 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-farm-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l-2 2-2-2m6 10l-2-2-2 2M15 17h4l2-2v-4h-2m-4-4V7l-2-2-2 2m6 10l-2-2-2 2"></path></svg>
+                Current Mandi Prices (₹/Quintal)
+            </h2>
+            
+            <div id="price-data-container" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                <p id="loading-message" class="col-span-3 text-center text-gray-500 italic">
+                    <span class="loading-spinner ease-linear rounded-full border-4 border-t-4 border-gray-200 h-6 w-6 inline-block mr-3"></span>
+                    Fetching real-time data...
+                </p>
+            </div>
+        </div>
+
+       
+        <div class="bg-white p-6 md:p-8 rounded-xl container-shadow">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6 border-b pb-2 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-soil-brown" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                Demand Forecast Analysis
+            </h2>
+            
+            <div class="flex flex-col md:flex-row gap-4 mb-4">
+                <select id="forecast-commodity" class="flex-grow p-3 border-2 border-gray-300 rounded-lg focus:border-farm-green focus:ring focus:ring-leaf-green/50">
+                    <option value="none">Select Commodity for Forecast</option>
+                    <option value="wheat">Wheat</option>
+                    <option value="rice">Rice</option>
+                    <option value="tomato">Tomato</option>
+                    <option value="potato">Potato</option>
+                </select>
+                <button id="forecast-btn" class="bg-soil-brown text-white px-6 py-3 rounded-xl font-medium hover:bg-soil-brown/90 transition duration-300 disabled:opacity-50">
+                    Get 7-Day Forecast
+                </button>
+            </div>
+            
+            <div id="forecast-result" class="mt-6 p-4 bg-leaf-green/20 border-l-4 border-leaf-green rounded-lg hidden">
+                
+            </div>
+        </div>
+
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            doc, 
+            setDoc, 
+            onSnapshot, 
+            collection, 
+            getDocs 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+      
+        const priceDataContainer = document.getElementById('price-data-container');
+        const loadingMessage = document.getElementById('loading-message');
+        const statusMessage = document.getElementById('status-message');
+        const forecastCommodity = document.getElementById('forecast-commodity');
+        const forecastBtn = document.getElementById('forecast-btn');
+        const forecastResult = document.getElementById('forecast-result');
+
+        
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let db, auth;
+        let isAuthReady = false;
+        let userId = null;
+
+        const MANDI_COLLECTION_PATH = `/artifacts/${appId}/public/data/mandi_prices`;
+        
+       
+        function renderPriceCard(data) {
+            const trendClass = data.trend === 'up' 
+                ? 'text-green-600' : data.trend === 'down' 
+                ? 'text-red-600' : 'text-gray-500';
+            const trendIcon = data.trend === 'up' 
+                ? 'M8 7V3h8v4m-4 14l4-4M12 10V6' : data.trend === 'down' 
+                ? 'M16 17V21h-8v-4m4-14L8 7M12 14v4' : 'M12 12h.01';
+
+            return `
+                <div class="data-card bg-white p-5 rounded-xl border border-leaf-green/50 shadow-md">
+                    <div class="flex justify-between items-start mb-3">
+                        <h3 class="text-xl font-bold text-farm-green">${data.commodity}</h3>
+                        <span class="text-xs font-semibold px-3 py-1 rounded-full ${trendClass} bg-gray-100">
+                            ${data.trend.toUpperCase()}
+                        </span>
+                    </div>
+                    <p class="text-4xl font-extrabold text-accent-yellow mb-2">
+                        ₹${data.latest_price_rs_per_quintal.toLocaleString('en-IN')}
+                    </p>
+                    <p class="text-sm text-gray-500 mb-4">
+                        <span class="font-medium">Mandi:</span> ${data.mandi_location}
+                    </p>
+                    <div class="flex items-center text-sm ${trendClass}">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${trendIcon}"></path>
+                        </svg>
+                        <span>${data.trend_change_rs} vs. Yesterday</span>
+                    </div>
+                </div>
+            `;
+        }
+
+       
+        function showStatus(message, className) {
+            statusMessage.innerHTML = message;
+            statusMessage.className = `text-center p-3 rounded-xl text-sm mb-6 ${className}`;
+            statusMessage.classList.remove('hidden');
+        }
+
+       
+        async function initializeAndAuthenticate() {
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                onAuthStateChanged(auth, (user) => {
+                    userId = user?.uid || crypto.randomUUID();
+                    isAuthReady = true;
+                    console.log("Firebase Auth Ready. User ID:", userId);
+                   
+                    setupPriceListener();
+                });
+            } catch (error) {
+                console.error("Firebase initialization or authentication failed:", error);
+                showStatus('Error: Failed to connect to market data service.', 'bg-red-100 text-red-700');
+            }
+        }
+
+        async function initializeMandiData() {
+            const collectionRef = collection(db, MANDI_COLLECTION_PATH);
+            const snapshot = await getDocs(collectionRef);
+
+            if (snapshot.empty) {
+                console.log("No market data found. Initializing mock data...");
+                const mockData = [
+                    { 
+                        id: 'wheat', 
+                        commodity: "Wheat (Basmati)", 
+                        latest_price_rs_per_quintal: 2450, 
+                        mandi_location: "Delhi (Azadpur)",
+                        trend: "stable",
+                        trend_change_rs: "±0",
+                        forecast_demand: "High demand expected next 7 days due to export orders.",
+                    },
+                    { 
+                        id: 'rice', 
+                        commodity: "Rice (Parboiled)", 
+                        latest_price_rs_per_quintal: 3800, 
+                        mandi_location: "Punjab (Amritsar)",
+                        trend: "up",
+                        trend_change_rs: "+45",
+                        forecast_demand: "Moderate demand. Price expected to stabilize.",
+                    },
+                    { 
+                        id: 'tomato', 
+                        commodity: "Tomato (Hybrid)", 
+                        latest_price_rs_per_quintal: 1200, 
+                        mandi_location: "Maharashtra (Pune)",
+                        trend: "down",
+                        trend_change_rs: "-110",
+                        forecast_demand: "Oversupply from surrounding regions. Expect price drop.",
+                    },
+                ];
+
+                for (const item of mockData) {
+                    const docRef = doc(db, MANDI_COLLECTION_PATH, item.id);
+                    await setDoc(docRef, item);
+                }
+                showStatus('Market data initialized and loaded.', 'bg-green-100 text-farm-green');
+            }
+        }
+
+       
+        function setupPriceListener() {
+            if (!isAuthReady || !db) return;
+
+           
+            initializeMandiData().then(() => {
+                const collectionRef = collection(db, MANDI_COLLECTION_PATH);
+
+                onSnapshot(collectionRef, (snapshot) => {
+                    loadingMessage.classList.add('hidden');
+                    priceDataContainer.innerHTML = '';
+                    
+                    if (snapshot.empty) {
+                        priceDataContainer.innerHTML = '<p class="col-span-3 text-center text-gray-500 italic">No market data available yet.</p>';
+                        return;
+                    }
+
+                    snapshot.docs.forEach(doc => {
+                        const data = doc.data();
+                        priceDataContainer.innerHTML += renderPriceCard(data);
+                    });
+                    showStatus('Real-time prices updated successfully!', 'bg-green-100 text-farm-green');
+                }, (error) => {
+                    console.error("Error listening to price data:", error);
+                    showStatus('Error: Failed to fetch real-time updates.', 'bg-red-100 text-red-700');
+                });
+            });
+        }
+
+       
+        function handleForecast() {
+            const commodityId = forecastCommodity.value;
+            
+            if (commodityId === 'none') {
+                forecastResult.innerHTML = '<p class="text-red-700 font-semibold">Please select a commodity before generating a forecast.</p>';
+                forecastResult.classList.remove('hidden');
+                return;
+            }
+
+            forecastBtn.disabled = true;
+            forecastBtn.innerHTML = '<span class="loading-spinner ease-linear rounded-full border-2 border-t-2 border-white h-4 w-4 inline-block mr-2"></span> Forecasting...';
+            forecastResult.classList.add('hidden');
+
+            
+            fetchForecastData(commodityId)
+                .then(data => {
+                    displayForecast(data);
+                })
+                .catch(error => {
+                    console.error("Forecast error:", error);
+                    forecastResult.innerHTML = `<p class="text-red-700 font-semibold">Error: Could not retrieve forecast for ${commodityId}.</p>`;
+                    forecastResult.classList.remove('hidden');
+                })
+                .finally(() => {
+                    forecastBtn.disabled = false;
+                    forecastBtn.innerHTML = 'Get 7-Day Forecast';
+                });
+        }
+        
+       
+        async function fetchForecastData(commodityId) {
+            await new Promise(resolve => setTimeout(resolve, 1500)); 
+
+            const forecasts = {
+                wheat: {
+                    period: "Next 7 Days",
+                    analysis: "Demand is expected to rise by 8% due to upcoming export tender results and low stock in neighboring Mandis. Price is predicted to increase by **₹80-120/quintal**.",
+                    action: "Hold stock for 5 days if storage conditions allow.",
+                },
+                rice: {
+                    period: "Next 7 Days",
+                    analysis: "Market is stable with consistent supply. No significant demand spikes expected. Price is projected to remain **stable (±₹20/quintal)**.",
+                    action: "Sell based on storage capacity and immediate need for capital.",
+                },
+                tomato: {
+                    period: "Next 7 Days",
+                    analysis: "Heavy rainfall in the south has slightly reduced incoming supply, but local yield remains high. Expect a small correction upwards in price by **₹30-50/quintal** before stabilizing.",
+                    action: "Wait for the small correction and sell towards the end of the week.",
+                },
+                potato: {
+                    period: "Next 7 Days",
+                    analysis: "Cold storage release is scheduled, increasing supply. Demand is steady. Price is predicted to decrease by **₹50-90/quintal**.",
+                    action: "Expedite selling to secure better margins before the new supply hits the market.",
+                }
+            };
+
+            return forecasts[commodityId] || { period: "N/A", analysis: "Forecast model currently offline.", action: "Contact FarmSync support." };
+        }
+
+       
+        function displayForecast(data) {
+            const formattedAnalysis = data.analysis.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+            forecastResult.innerHTML = `
+                <div class="space-y-3">
+                    <p class="text-lg font-bold text-farm-green">Forecast for ${data.period}:</p>
+                    <p class="text-gray-700">${formattedAnalysis}</p>
+                    <p class="text-base font-semibold text-soil-brown border-t pt-2">Recommended Action: <span class="font-normal">${data.action}</span></p>
+                </div>
+            `;
+            forecastResult.classList.remove('hidden');
+        }
+
+        
+        forecastBtn.addEventListener('click', handleForecast);
+        
+         initializeAndAuthenticate();
+
+    </script>
+</body>
+</html>

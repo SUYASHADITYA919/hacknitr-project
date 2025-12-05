@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmSync - AI Crop Diagnosis</title>
+   
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'farm-green': '#38761D', 
+                        'leaf-green': '#A9D18E', 
+                        'soil-brown': '#654321', 
+                        'surface': '#f9fafb', 
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        .container-shadow {
+            box-shadow: 0 10px 30px rgba(56, 118, 29, 0.15);
+        }
+        .diagnosis-input:focus {
+            border-color: #38761D;
+            box-shadow: 0 0 0 3px rgba(169, 209, 142, 0.5);
+        }
+        .loader {
+            border-top-color: #38761D;
+            -webkit-animation: spin 1s ease-in-out infinite;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-surface min-h-screen p-4 md:p-8 font-sans">
+
+   
+    <div class="max-w-4xl mx-auto">
+        
+        
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold text-farm-green mb-2">
+                FarmSync <span class="text-soil-brown">AI Diagnosis</span>
+            </h1>
+            <p class="text-xl text-gray-600">Instantly identify crop diseases and get science-backed treatments.</p>
+        </header>
+
+    
+        <div id="input-card" class="bg-white p-6 md:p-8 rounded-xl container-shadow mb-8 transition-all duration-300">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6 border-b pb-2">Diagnose Your Crop</h2>
+
+            
+            <div class="space-y-6">
+               
+                <div>
+                    <label for="text-input" class="block text-sm font-medium text-gray-700 mb-2">
+                        1. Describe the symptoms or crop (e.g., "Tomato plant with yellowing leaves and dark spots on stems")
+                    </label>
+                    <textarea id="text-input" rows="4" class="w-full p-3 border-2 border-gray-300 rounded-lg diagnosis-input transition duration-150 ease-in-out" placeholder="Enter details here..."></textarea>
+                </div>
+
+              
+                <div class="border-t pt-6">
+                    <label for="image-upload" class="block text-sm font-medium text-gray-700 mb-2">
+                        2. Or, upload a picture of the affected crop (Optional)
+                    </label>
+                    <input type="file" id="image-upload" accept="image/*" class="w-full text-sm text-gray-500
+                        file:mr-4 file:py-2 file:px-4
+                        file:rounded-full file:border-0
+                        file:text-sm file:font-semibold
+                        file:bg-leaf-green file:text-farm-green
+                        hover:file:bg-leaf-green/80 transition duration-150 ease-in-out
+                    "/>
+                    <div id="image-preview-container" class="mt-4 hidden">
+                        <img id="image-preview" class="max-h-48 w-auto rounded-lg shadow-lg object-contain border border-gray-200" alt="Image preview">
+                    </div>
+                </div>
+
+            
+                <div class="pt-4">
+                    <button id="diagnose-btn" 
+                            class="w-full flex justify-center items-center px-6 py-3 border border-transparent text-lg font-medium rounded-xl text-white bg-farm-green hover:bg-farm-green/90 transition duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-leaf-green">
+                        <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.103A.904.904 0 0121 5.75c0 .353-.16.697-.432.922l-14 11A.904.904 0 015 17.5a.904.904 0 01-.432-.128l-4-2A.905.905 0 011 14.5c0-.348.156-.69.426-.913l14-11A.904.904 0 0117 2.5c.35 0 .69.156.913.426z"></path></svg>
+                        Start Diagnosis
+                    </button>
+                </div>
+            </div>
+        </div>
+
+       
+        <div id="status-message" class="hidden text-center p-4 rounded-lg text-lg mb-8"></div>
+
+       
+        <div id="results-card" class="hidden bg-white p-6 md:p-8 rounded-xl container-shadow mb-8">
+            <h2 class="text-3xl font-bold text-farm-green border-b pb-3 mb-6">Diagnosis Results</h2>
+            
+         
+            <div id="diagnosis-content" class="prose max-w-none text-gray-700 leading-relaxed">
+               
+            </div>
+
+           
+            <div class="mt-8 pt-6 border-t border-gray-200">
+                <h3 class="text-xl font-semibold text-gray-800 mb-3 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-soil-brown" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Science-Backed Sources
+                </h3>
+                <ul id="source-list" class="list-none space-y-2 text-sm text-gray-600">
+                  
+                </ul>
+                <p id="no-sources" class="text-sm text-gray-500 italic hidden">No specific web sources were cited for this general diagnosis.</p>
+            </div>
+        </div>
+
+    </div>
+
+ 
+    <script type="module">
+        
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const textInput = document.getElementById('text-input');
+        const imageUpload = document.getElementById('image-upload');
+        const diagnoseBtn = document.getElementById('diagnose-btn');
+        const statusMessage = document.getElementById('status-message');
+        const resultsCard = document.getElementById('results-card');
+        const diagnosisContent = document.getElementById('diagnosis-content');
+        const sourceList = document.getElementById('source-list');
+        const noSources = document.getElementById('no-sources');
+        const imagePreview = document.getElementById('image-preview');
+        const imagePreviewContainer = document.getElementById('image-preview-container');
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let db, auth;
+
+       
+        async function initializeAndAuthenticate() {
+            try {
+                
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                onAuthStateChanged(auth, (user) => {
+                    const userId = user?.uid || 'anonymous-user';
+                    console.log("Firebase Auth Ready. User ID:", userId);
+                    
+                });
+            } catch (error) {
+                console.error("Firebase initialization or authentication failed:", error);
+                
+            }
+        }
+
+       
+        async function simulateDiagnosisAPI(prompt, base64Image) {
+           
+            await new Promise(resolve => setTimeout(resolve, 2500)); 
+
+            
+            const isImage = !!base64Image;
+            let resultText = "";
+            let sources = [];
+
+            if (prompt.toLowerCase().includes("tomato") || isImage) {
+                resultText = `**Diagnosis: Early Blight (Alternaria solani)**
+
+**Description:** This common fungal disease affects tomato and potato plants. Symptoms usually appear on older, lower leaves first, characterized by dark, concentric spots (bullseye pattern). If untreated, it causes defoliation and can significantly reduce yield. The appearance suggests the disease is in its moderate stage.
+
+**Treatment Plan:**
+1.  **Sanitation:** Remove and destroy all infected leaves and plant debris immediately.
+2.  **Watering:** Water at the base of the plant to avoid wetting the foliage, as moisture encourages fungal growth.
+3.  **Fungicide:** Apply a registered fungicide containing chlorothalonil or mancozeb every 7-10 days. Always follow label instructions.
+4.  **Crop Rotation:** In future seasons, rotate tomatoes with non-related crops (like corn or beans) to break the disease cycle.
+`;
+                sources = [
+                    { uri: "https://example.com/agri/early-blight-treatment", title: "Managing Early Blight in Tomatoes" },
+                    { uri: "https://example.com/fungi/alternaria-solani", title: "About Alternaria Solani Fungus" }
+                ];
+            } else if (prompt.toLowerCase().includes("wheat") || prompt.toLowerCase().includes("yellow")) {
+                resultText = `**Diagnosis: Wheat Stripe Rust (Puccinia striiformis)**
+
+**Description:** Stripe rust is a devastating fungal disease of wheat, barley, and triticale. It is identified by yellow to orange-yellow rust pustules in narrow stripes on leaves. It thrives in cool, moist conditions.
+
+**Treatment Plan:**
+1.  **Variety Selection:** Use resistant wheat varieties in future planting.
+2.  **Fungicide:** Apply foliar fungicides early in the growing season, typically when rust is first observed. Products containing triazoles are often effective.
+3.  **Monitoring:** Regularly scout fields for early detection to maximize treatment effectiveness.
+`;
+                sources = []; // Simulate no specific web source grounding for this query
+            } else {
+                resultText = "No clear diagnosis could be made based on the provided information. Please ensure the symptoms are clearly described and/or upload a high-quality image of the affected plant tissue. For best results, focus on a single crop/disease.";
+                sources = [];
+            }
+
+            return { text: resultText, sources: sources };
+        }
+
+       
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result.split(',')[1]); // Only return the base64 part
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        
+        async function handleDiagnosis() {
+            const text = textInput.value.trim();
+            const imageFile = imageUpload.files[0];
+
+            if (!text && !imageFile) {
+                showStatus('Please provide a text description or upload an image to start the diagnosis.', 'bg-yellow-100 text-soil-brown');
+                return;
+            }
+
+           
+            diagnoseBtn.disabled = true;
+            resultsCard.classList.add('hidden');
+            showStatus(
+                '<div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-8 w-8 inline-block mr-3"></div> Analyzing crop symptoms with AI...', 
+                'bg-leaf-green text-farm-green'
+            );
+            
+            let base64Image = null;
+
+            
+            if (imageFile) {
+                try {
+                    base64Image = await fileToBase64(imageFile);
+                    showStatus(
+                        '<div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-8 w-8 inline-block mr-3"></div> Image uploaded. Sending to AI model...', 
+                        'bg-leaf-green text-farm-green'
+                    );
+                } catch (error) {
+                    console.error("Image conversion failed:", error);
+                    showStatus('Error processing image. Please try a different file.', 'bg-red-100 text-red-700');
+                    diagnoseBtn.disabled = false;
+                    return;
+                }
+            }
+            
+            try {
+               
+                const result = await simulateDiagnosisAPI(text, base64Image);
+                
+               
+                displayResults(result);
+                showStatus('Diagnosis Complete. See results below.', 'bg-green-100 text-farm-green');
+            } catch (error) {
+                console.error("Diagnosis simulation failed:", error);
+                showStatus('A system error occurred during diagnosis. Please try again.', 'bg-red-100 text-red-700');
+            } finally {
+                diagnoseBtn.disabled = false;
+            }
+        }
+
+       
+        function showStatus(htmlContent, cssClass) {
+            statusMessage.innerHTML = htmlContent;
+            statusMessage.className = `text-center p-4 rounded-xl text-lg mb-8 ${cssClass}`;
+            statusMessage.classList.remove('hidden');
+        }
+
+        
+        function displayResults(result) {
+            const formattedText = result.text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n/g, '<br>');
+            diagnosisContent.innerHTML = formattedText;
+
+           
+            sourceList.innerHTML = '';
+            if (result.sources && result.sources.length > 0) {
+                result.sources.forEach(source => {
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `
+                        <a href="${source.uri}" target="_blank" class="text-farm-green hover:underline flex items-start">
+                            <svg class="w-4 h-4 mt-1 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4m-4-4l6-6m0 0l-4-4m4 4l-4 4"></path></svg>
+                            <span class="break-words">${source.title}</span>
+                        </a>
+                    `;
+                    sourceList.appendChild(listItem);
+                });
+                noSources.classList.add('hidden');
+            } else {
+                noSources.classList.remove('hidden');
+            }
+
+           
+            resultsCard.classList.remove('hidden');
+            resultsCard.scrollIntoView({ behavior: 'smooth' });
+        }
+
+       
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreviewContainer.classList.remove('hidden');
+                }
+                reader.readAsDataURL(file);
+            } else {
+                imagePreview.src = '';
+                imagePreviewContainer.classList.add('hidden');
+            }
+        }
+
+       
+        diagnoseBtn.addEventListener('click', handleDiagnosis);
+        imageUpload.addEventListener('change', handleImageUpload);
+        
+        initializeAndAuthenticate();
+
+    </script>
+</body>
+</html>

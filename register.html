@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmSync Register</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'farm-green': '#38761D', 
+                        'leaf-green': '#A9D18E', 
+                        'soil-brown': '#654321', 
+                        'surface': '#f9fafb', 
+                        'accent-orange': '#FF9900', 
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        
+        .register-container {
+            transition: all 0.5s ease;
+        }
+    </style>
+</head>
+<body class="bg-surface min-h-screen p-4 flex items-center justify-center font-sans">
+
+    
+    <div class="register-container w-full max-w-md bg-white p-8 md:p-10 rounded-xl shadow-2xl border-t-8 border-farm-green">
+        
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-extrabold text-farm-green mb-2">FarmSync</h1>
+            <p class="text-lg text-gray-600">Create Your Farmer Account</p>
+        </header>
+
+       
+        <form id="register-form">
+            <div class="mb-4">
+                <label for="full-name" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                <input type="text" id="full-name" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-farm-green focus:ring focus:ring-leaf-green/50" placeholder="Your full name" required>
+            </div>
+
+            <div class="mb-4">
+                <label for="email-phone" class="block text-sm font-medium text-gray-700 mb-1">Email or Phone Number</label>
+                <input type="text" id="email-phone" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-farm-green focus:ring focus:ring-leaf-green/50" placeholder="e.g., yourname@example.com or 9876543210" required>
+            </div>
+
+            <div class="mb-4">
+                <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <input type="password" id="password" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-farm-green focus:ring focus:ring-leaf-green/50" placeholder="Choose a strong password" required>
+            </div>
+
+            <div class="mb-6">
+                <label for="confirm-password" class="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                <input type="password" id="confirm-password" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-farm-green focus:ring focus:ring-leaf-green/50" placeholder="Re-enter your password" required>
+            </div>
+
+            <button type="submit" class="w-full bg-farm-green text-white py-3 rounded-lg font-semibold text-lg hover:bg-farm-green/90 transition duration-300 shadow-md">
+                Register Account
+            </button>
+            
+            <p class="text-center text-sm text-gray-500 mt-6">
+                Already have an account? <a href="login.html" class="text-farm-green hover:underline font-medium">Log In Here</a>
+            </p>
+            
+            
+            <div id="message-box" class="hidden mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm transition-all duration-300"></div>
+
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const registerForm = document.getElementById('register-form');
+            const fullNameInput = document.getElementById('full-name');
+            const emailPhoneInput = document.getElementById('email-phone');
+            const passwordInput = document.getElementById('password');
+            const confirmPasswordInput = document.getElementById('confirm-password');
+            const messageBox = document.getElementById('message-box');
+
+            
+
+            registerForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                messageBox.classList.add('hidden');
+                
+                const pass = passwordInput.value.trim();
+                const confirmPass = confirmPasswordInput.value.trim();
+
+                if (pass !== confirmPass) {
+                    displayMessage('Error: Passwords do not match.', 'bg-red-100 border-red-400 text-red-700');
+                    return;
+                }
+                
+                if (pass.length < 6) {
+                     displayMessage('Error: Password must be at least 6 characters long.', 'bg-red-100 border-red-400 text-red-700');
+                    return;
+                }
+
+                displayMessage('Registration successful! Redirecting to login...', 'bg-leaf-green/50 border-farm-green/50 text-farm-green');
+                
+                 setTimeout(() => {
+                    window.location.href = "login.html"; 
+                }, 2000);
+            });
+
+           
+            function displayMessage(message, className) {
+                messageBox.textContent = message;
+                messageBox.className = `mt-4 p-3 border rounded-lg text-sm transition-all duration-300 ${className}`;
+                messageBox.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
